@@ -19,6 +19,8 @@ deploy:
   only:
     - prod
   image: registry.gitlab.com/mwse/docker/heroku-cli
-  script:
+  before_script:
+    - echo "machine git.heroku.com\nlogin deploy\npassword $HEROKU_API_KEY" > $HOME/.netrc
     - heroku git:remote -a $HEROKU_TARGET
+  script:
     - git push heroku $CI_BRANCH:master
