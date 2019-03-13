@@ -21,4 +21,4 @@ deploy:
   image: registry.gitlab.com/mwse/docker/heroku-cli
   script:
     - heroku git:remote -a $HEROKU_TARGET
-    - git push heroku master
+    - git push heroku $CI_BRANCH:master
