@@ -1,4 +1,4 @@
-ARG VERSION=v2.5.8
+ARG VERSION=latest
 FROM netboxcommunity/netbox:$VERSION
 
 RUN apk add --no-cache curl

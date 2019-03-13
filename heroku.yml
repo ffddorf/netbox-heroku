@@ -4,6 +4,8 @@ setup:
 build:
   docker:
     web: Dockerfile
+  config:
+    VERSION: v2.5.8
 release:
   image: web
   command:
