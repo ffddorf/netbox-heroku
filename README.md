@@ -4,6 +4,8 @@
 
 This minimalistic repository allows a simplified deployment of [Netbox](https://github.com/digitalocean/netbox) to [Heroku](https://www.heroku.com/).
 
+It is using the Docker feature recently introduced in Heroku: https://devcenter.heroku.com/articles/build-docker-images-heroku-yml
+
 ## Updates
 
 In order to update the Netbox version, set `build.config.VERSION` in `heroku.yml`. This setting determines which tag of the community Netbox docker image to use: https://hub.docker.com/r/netboxcommunity/netbox/tags
