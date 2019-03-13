@@ -7,6 +7,6 @@ build:
 release:
   image: web
   command:
-    - ./manage.py migrate
+    - python ./manage.py migrate
 run:
   web: gunicorn -c /etc/netbox/config/gunicorn_config.py --bind 0.0.0.0:$PORT netbox.wsgi
