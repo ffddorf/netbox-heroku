@@ -1,0 +1,31 @@
+version: "3.5"
+
+services:
+  nginx:
+    command: nginx -c /etc/netbox-nginx/nginx.conf
+    image: nginx:1.15-alpine
+    depends_on:
+      - app
+    ports:
+      - 8080
+    volumes:
+      - ./devel/nginx.conf:/etc/netbox-nginx/nginx.conf:ro
+
+  app:
+    build: .
+    image: iamu/netbox
+    command: gunicorn -c /etc/netbox/config/gunicorn_config.py --bind 0.0.0.0:7000 netbox.wsgi
+    environment:
+      SECRET_KEY: 12345678
+      DATABASE_URL: postgres://netbox:netbox@db/netbox?sslmode=disable
+
+  db:
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_PASSWORD: netbox
+      POSTGRES_USER: netbox
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
