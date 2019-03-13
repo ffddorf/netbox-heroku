@@ -1,0 +1,2 @@
+variables:
+  HEROKU_TARGET: blickfang-netbox
