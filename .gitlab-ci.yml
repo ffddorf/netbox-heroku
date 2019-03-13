@@ -22,4 +22,5 @@ deploy:
   before_script:
     - git remote add heroku https://deploy:${HEROKU_API_KEY}@git.heroku.com/${HEROKU_TARGET}.git
   script:
-    - git push heroku $CI_BRANCH:master
+    - git checkout -b deploy
+    - git push heroku deploy:master
