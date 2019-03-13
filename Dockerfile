@@ -1,6 +1,7 @@
 ARG VERSION=v2.5.8
 FROM netboxcommunity/netbox:$VERSION
 
+RUN apk add --no-cache curl
 RUN pip install dj_database_url whitenoise
 
 COPY patch/settings_append.py patch/patch.py /tmp/
