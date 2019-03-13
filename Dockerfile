@@ -1,6 +1,5 @@
 ARG VERSION=v2.5.8
 FROM netboxcommunity/netbox:$VERSION
-ENTRYPOINT []
 
 RUN apk add --no-cache curl
 RUN pip install dj_database_url whitenoise
@@ -15,3 +14,6 @@ COPY patch/config.py /etc/netbox/config/configuration.py
 
 # copy static files
 RUN SECRET_KEY=123456 ./manage.py collectstatic --no-input
+
+ENTRYPOINT [ "/bin/sh", "-c" ]
+CMD ["gunicorn", "-c /etc/netbox/config/gunicorn_config.py", "netbox.wsgi"]
