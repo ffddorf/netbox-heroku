@@ -3,7 +3,7 @@ include: '/vars.yml'
 deploy:
   stage: deploy
   only:
-    - master
+    - prod
   image: registry.gitlab.com/mwse/docker/heroku-cli
   script:
     - heroku git:remote -a $HEROKU_TARGET
