@@ -1,0 +1,15 @@
+{
+  "name": "Netbox",
+  "description": "IP address management (IPAM) and data center infrastructure management (DCIM) tool.",
+  "keywords": ["netops", "network", "ipam", "dcim"],
+  "website": "https://netbox.readthedocs.io/",
+  "repository": "https://github.com/mraerino/netbox-heroku",
+  "env": {
+    "SECRET_KEY": {
+      "description": "A secret key for verifying the integrity of signed cookies.",
+      "generator": "secret"
+    }
+  },
+  "addons": ["heroku-postgresql"],
+  "stack": "container"
+}
