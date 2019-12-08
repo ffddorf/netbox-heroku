@@ -1,5 +1,14 @@
 import os
 import dj_database_url
+import json
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+
+def str_to_bool(val):
+    return val.lower() in ["1", "true", "yes"]
 
 #########################
 #                       #
@@ -9,8 +18,6 @@ import dj_database_url
 
 # This is a list of valid fully-qualified domain names (FQDNs) for the NetBox server. NetBox will not permit write
 # access to the server via any other hostnames. The first FQDN in the list will be treated as the preferred name.
-#
-# Example: ALLOWED_HOSTS = ['netbox.example.com', 'netbox.internal.local']
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(' ')
 
 # PostgreSQL database configuration.
@@ -22,8 +29,19 @@ DATABASE = dj_database_url.config()
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = os.environ.get('SECRET_KEY', '')
 
-BASE_URL = os.environ.get('BASE_URL')
-SECURE_SSL_REDIRECT = os.environ.get('SECURE_SSL_REDIRECT', True)
+SECURE_SSL_REDIRECT = str_to_bool(os.environ.get('SECURE_SSL_REDIRECT', 'YES'))
+
+# Redis database settings. The Redis database is used for caching and background processing such as webhooks
+REDIS = {}
+REDIS_URL = os.environ.get('REDIS_URL')
+if REDIS_URL is not None:
+    urlparse.uses_netloc.append("redis")
+    redis_conn = urlparse.urlparse(REDIS_URL)
+    REDIS = {
+        'HOST': redis_conn.hostname,
+        'PORT': redis_conn.port,
+        'PASSWORD': redis_conn.password,
+    }
 
 #########################
 #                       #
@@ -40,11 +58,17 @@ ADMINS = [
 # API Cross-Origin Resource Sharing (CORS) settings. If CORS_ORIGIN_ALLOW_ALL is set to True, all origins will be
 # allowed. Otherwise, define a list of allowed origins using either CORS_ORIGIN_WHITELIST or
 # CORS_ORIGIN_REGEX_WHITELIST. For more information, see https://github.com/ottoyiu/django-cors-headers
-CORS_ORIGIN_ALLOW_ALL = os.environ.get('CORS_ORIGIN_ALLOW_ALL', 'False').lower() == 'true'
-CORS_ORIGIN_WHITELIST = os.environ.get('CORS_ORIGIN_WHITELIST', '').split(' ')
-CORS_ORIGIN_REGEX_WHITELIST = [
-    # r'^(https?://)?(\w+\.)?example\.com$',
-]
+CORS_ORIGIN_ALLOW_ALL = str_to_bool(os.environ.get('CORS_ORIGIN_ALLOW_ALL', 'NO'))
+
+CORS_ORIGIN_WHITELIST = []
+cors_whitelist = os.environ.get('CORS_ORIGIN_WHITELIST')
+if cors_whitelist is not None:
+    CORS_ORIGIN_WHITELIST = cors_whitelist.split(' ')
+
+CORS_ORIGIN_REGEX_WHITELIST = []
+cors_regex_whitelist = os.environ.get('CORS_ORIGIN_REGEX_WHITELIST')
+if cors_regex_whitelist is not None:
+    CORS_ORIGIN_REGEX_WHITELIST = cors_regex_whitelist.split(' ')
 
 # Email settings
 EMAIL = {
@@ -58,17 +82,43 @@ EMAIL = {
 
 # Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
 # are permitted to access most data in NetBox (excluding secrets) but not make any changes.
-LOGIN_REQUIRED = os.environ.get('LOGIN_REQUIRED', 'True').lower() == 'true'
+LOGIN_REQUIRED = str_to_bool(os.environ.get('LOGIN_REQUIRED', 'YES'))
 
 # Base URL path if accessing NetBox within a directory. For example, if installed at http://example.com/netbox/, set:
 # BASE_PATH = 'netbox/'
-BASE_PATH = os.environ.get('BASE_PATH', '')
+BASE_PATH = ''
 
 # Setting this to True will display a "maintenance mode" banner at the top of every page.
-MAINTENANCE_MODE = os.environ.get('MAINTENANCE_MODE', False)
+MAINTENANCE_MODE = str_to_bool(os.environ.get('MAINTENANCE_MODE', 'NO'))
+
+# Credentials that NetBox will uses to authenticate to devices when connecting via NAPALM.
+NAPALM_USERNAME = os.environ.get('NAPALM_USERNAME', '')
+NAPALM_PASSWORD = os.environ.get('NAPALM_PASSWORD', '')
+
+# NAPALM timeout (in seconds). (Default: 30)
+NAPALM_TIMEOUT = os.environ.get('NAPALM_PASSWORD', 30)
+
+# NAPALM optional arguments (see http://napalm.readthedocs.io/en/latest/support/#optional-arguments). Arguments must
+# be provided as a dictionary.
+NAPALM_ARGS = {}
+
+napalm_args_raw = os.environ.get('NAPALM_ARGS')
+if napalm_args_raw is not None:
+    try:
+        NAPALM_ARGS = json.loads(napalm_args_raw)
+    except:
+        pass
 
 # Determine how many objects to display per page within a list. (Default: 50)
 PAGINATE_COUNT = os.environ.get('PAGINATE_COUNT', 50)
+
+# When determining the primary IP address for a device, IPv6 is preferred over IPv4 by default. Set this to True to
+# prefer IPv4 instead.
+PREFER_IPV4 = str_to_bool(os.environ.get('PREFER_IPV4', "NO"))
+
+# The Webhook event backend is disabled by default. Set this to True to enable it. Note that this requires a Redis
+# database be configured and accessible by NetBox (see `REDIS` below).
+WEBHOOKS_ENABLED = str_to_bool(os.environ.get('WEBHOOKS_ENABLED', "YES"))
 
 # Time zone (default: UTC)
 TIME_ZONE = os.environ.get('TIME_ZONE', 'UTC')

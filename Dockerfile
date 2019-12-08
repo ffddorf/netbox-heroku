@@ -4,16 +4,16 @@ FROM netboxcommunity/netbox:$VERSION
 RUN apk add --no-cache curl
 RUN pip install dj_database_url whitenoise
 
-COPY patch/settings_append.py patch/patch.py /tmp/
-RUN cat /tmp/settings_append.py >> /opt/netbox/netbox/netbox/settings.py && \
-    rm /tmp/settings_append.py && \
-    mkdir /opt/netbox/netbox/static && \
-    /tmp/patch.py
+COPY patch/patch.py /tmp/
+RUN /tmp/patch.py
 
-COPY patch/config.py /etc/netbox/config/configuration.py
+COPY patch/configuration.py /etc/netbox/config/
+COPY patch/settings_heroku.py /opt/netbox/netbox/netbox/
+ENV DJANGO_SETTINGS_MODULE "netbox.settings_heroku"
 
 # copy static files
-RUN SECRET_KEY=123456 ./manage.py collectstatic --no-input
+RUN mkdir /opt/netbox/netbox/static && \
+    SECRET_KEY=123456 WEBHOOKS_ENABLED=NO ./manage.py collectstatic --no-input
 
 ENTRYPOINT [ "/bin/sh", "-c" ]
 CMD ["gunicorn", "-c /etc/netbox/config/gunicorn_config.py", "netbox.wsgi"]

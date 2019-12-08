@@ -1,3 +1,5 @@
+from netbox.settings import *
+
 try:
     MIDDLEWARE = MIDDLEWARE
 except:
